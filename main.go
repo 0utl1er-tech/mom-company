@@ -2,32 +2,18 @@ package main
 
 import (
 	"context"
-	"errors"
-	"net"
 	"net/http"
 	"os"
-	"os/signal"
 	"syscall"
 
-	accountv1 "github.com/0utl1er-tech/go-backend/gen/pb/account/service/v1grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/0utl1er-tech/go-backend/internal/application/mail"
-	"github.com/0utl1er-tech/go-backend/internal/config"
-	"github.com/0utl1er-tech/go-backend/internal/gapi/method"
-	"github.com/0utl1er-tech/go-backend/internal/gapi/service"
-	"github.com/0utl1er-tech/go-backend/internal/infra/db/repository"
-	"github.com/0utl1er-tech/go-backend/internal/infra/worker"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/hibiken/asynq"
-	"github.com/rakyll/statik/fs"
-
+	companyv1connect "github.com/0utl1er-tech/mom-company/gen/pb/company/v1/companyv1connect"
+	db "github.com/0utl1er-tech/mom-company/gen/sqlc"
+	"github.com/0utl1er-tech/mom-company/internal/util"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rs/cors"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var interruptSignals = []os.Signal{
@@ -37,208 +23,61 @@ var interruptSignals = []os.Signal{
 }
 
 func main() {
-	config, err := config.LoadConfig(".")
+	cfg, err := util.LoadConfig(".")
 	if err != nil {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		log.Fatal().Err(err).Msg("Failed to load config")
 	}
 
-	if config.Environment == "DEV" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
-	defer stop()
-
-	connPool, err := pgxpool.New(ctx, config.DSN())
+	connPool, err := pgxpool.New(context.Background(), cfg.DBSource)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Cannot connect to db")
+		log.Fatal().Err(err).Msg("Failed to create connection pool")
 	}
 
-	store := repository.NewDAO(connPool)
+	queries := db.New(connPool)
+	_ = queries
 
-	redisOpt := asynq.RedisClientOpt{
-		Addr:     net.JoinHostPort(config.Redis.Host, config.Redis.Port),
-		Password: config.Redis.Password,
-		DB:       config.Redis.DB,
+	// HTTPサーバーの設定
+	mux := http.NewServeMux()
+
+	// Connect-Goハンドラーを登録（Company のみ、空実装）
+	path, handler := companyv1connect.NewCompanyServiceHandler(
+		companyv1connect.UnimplementedCompanyServiceHandler{},
+	)
+	mux.Handle(path, handler)
+
+	// HTTP/2対応のサーバーを作成
+	server := &http.Server{
+		Addr:    cfg.ServerAddress,
+		Handler: h2c.NewHandler(mux, &http2.Server{}),
 	}
 
-	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+	// サーバー起動とGraceful Shutdown
+	waitGroup, ctx := errgroup.WithContext(context.Background())
 
-	waitGroup, ctx := errgroup.WithContext(ctx)
+	waitGroup.Go(func() error {
+		log.Info().Msgf("Start Connect-Go server at %s", server.Addr)
+		err := server.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Error().Err(err).Msg("Connect-Go server failed to serve")
+			return err
+		}
+		return nil
+	})
 
-	runTaskProcessor(ctx, waitGroup, config, redisOpt, store)
-	runGrpcServer(ctx, waitGroup, config, store, taskDistributor)
-	runGatewayServer(ctx, waitGroup, config, store, taskDistributor)
+	waitGroup.Go(func() error {
+		<-ctx.Done()
+		log.Info().Msg("Graceful shutdown Connect-Go server")
+		err := server.Shutdown(context.Background())
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to shutdown server gracefully")
+			return err
+		}
+		log.Info().Msg("Connect-Go server is stopped")
+		return nil
+	})
 
 	err = waitGroup.Wait()
 	if err != nil {
-		log.Fatal().Err(err).Msg("error from wait group")
+		log.Fatal().Err(err).Msg("Failed to wait")
 	}
-}
-
-func runTaskProcessor(
-	ctx context.Context,
-	waitGroup *errgroup.Group,
-	config config.Config,
-	redisOpt asynq.RedisClientOpt,
-	store repository.DAO,
-) {
-	mailer := *mail.NewSendConfirmationMail(config.EmailSender.Name, config.EmailSender.Address, config.EmailSender.Password)
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
-
-	log.Info().Msg("Start task processor")
-	err := taskProcessor.Start()
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to start task processor")
-	}
-
-	waitGroup.Go(func() error {
-		<-ctx.Done()
-		log.Info().Msg("Graceful shutdown task processor")
-
-		taskProcessor.Shutdown()
-		log.Info().Msg("Task processor is stopped")
-
-		return nil
-	})
-}
-
-func runGrpcServer(
-	ctx context.Context,
-	waitGroup *errgroup.Group,
-	config config.Config,
-	store repository.DAO,
-	taskDistributor worker.TaskDistributor,
-) {
-	server, err := service.NewServer(config, store, taskDistributor)
-	method := method.NewMethod(server)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Cannot create server")
-	}
-
-	gprcLogger := grpc.UnaryInterceptor(service.GrpcLogger)
-	grpcServer := grpc.NewServer(gprcLogger)
-	accountv1.RegisterAccountServiceServer(grpcServer, method)
-	reflection.Register(grpcServer)
-
-	GRPCServerAddress := net.JoinHostPort(config.Server.Host, config.Server.GRPCPort)
-	listener, err := net.Listen("tcp", GRPCServerAddress)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Cannot create listener")
-	}
-
-	waitGroup.Go(func() error {
-		log.Info().Msgf("Start gRPC server at %s", listener.Addr().String())
-
-		err = grpcServer.Serve(listener)
-		if err != nil {
-			if errors.Is(err, grpc.ErrServerStopped) {
-				return nil
-			}
-			log.Error().Err(err).Msg("gRPC server failed to serve")
-			return err
-		}
-
-		return nil
-	})
-
-	// graceful shutdown
-	waitGroup.Go(func() error {
-		<-ctx.Done()
-		log.Info().Msg("Graceful shutdown gRPC server")
-
-		grpcServer.GracefulStop()
-		log.Info().Msg("gRPC server is stopped")
-
-		return nil
-	})
-}
-
-func runGatewayServer(
-	ctx context.Context,
-	waitGroup *errgroup.Group,
-	config config.Config,
-	store repository.DAO,
-	taskDistributor worker.TaskDistributor,
-) {
-	server, err := service.NewServer(config, store, taskDistributor)
-	if err != nil {
-		log.Fatal().Err(err).Msg("cannot create server")
-	}
-
-	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-		MarshalOptions: protojson.MarshalOptions{
-			UseProtoNames: true,
-		},
-		UnmarshalOptions: protojson.UnmarshalOptions{
-			DiscardUnknown: true,
-		},
-	})
-
-	grpcMux := runtime.NewServeMux(jsonOption)
-
-	err = accountv1.RegisterAccountServiceHandlerServer(ctx, grpcMux, server)
-	if err != nil {
-		log.Fatal().Err(err).Msg("cannot register handler server")
-	}
-
-	mux := http.NewServeMux()
-	mux.Handle("/", grpcMux)
-
-	statikFS, err := fs.New()
-	if err != nil {
-		log.Fatal().Err(err).Msg("cannot create statik fs")
-	}
-
-	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
-	mux.Handle("/swagger/", swaggerHandler)
-
-	c := cors.New(cors.Options{
-		AllowedMethods: []string{
-			http.MethodHead,
-			http.MethodOptions,
-			http.MethodGet,
-			http.MethodPost,
-			http.MethodPut,
-			http.MethodPatch,
-			http.MethodDelete,
-		},
-		AllowedHeaders: []string{
-			"Content-Type",
-			"Authorization",
-		},
-		AllowCredentials: true,
-	})
-	handler := c.Handler(service.HttpLogger(mux))
-
-	httpServer := &http.Server{
-		Handler: handler,
-	}
-
-	waitGroup.Go(func() error {
-		log.Info().Msgf("start HTTP gateway server at %s", httpServer.Addr)
-		err = httpServer.ListenAndServe()
-		if err != nil {
-			if errors.Is(err, http.ErrServerClosed) {
-				return nil
-			}
-			log.Error().Err(err).Msg("HTTP gateway server failed to serve")
-			return err
-		}
-		return nil
-	})
-
-	waitGroup.Go(func() error {
-		<-ctx.Done()
-		log.Info().Msg("graceful shutdown HTTP gateway server")
-
-		err := httpServer.Shutdown(context.Background())
-		if err != nil {
-			log.Error().Err(err).Msg("failed to shutdown HTTP gateway server")
-			return err
-		}
-
-		log.Info().Msg("HTTP gateway server is stopped")
-		return nil
-	})
 }

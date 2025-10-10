@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package contact.v1;
+
+option go_package = "github.com/0utl1er-tech/mom-company/gen/pb/contact/v1;contactv1";
+
+message Contact {
+  string id = 1;
+  string email = 2;
+  string phone = 3;
+}
+
+message ContactRequest {
+  string email = 1;
+  string phone = 2;
+}

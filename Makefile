@@ -28,10 +28,10 @@ new_migration:
 	migrate create -ext sql -dir db/migration -seq $(name)
 
 db_docs:
-	dbdocs build docs/template.dbml
+	dbdocs build docs/database.dbml
 
 db_schema:
-	dbml2sql --postgres -o docs/schema.sql docs/template.dbml
+	dbml2sql --postgres -o docs/schema.sql docs/database.dbml
 	cp docs/schema.sql db/migration/000000_init_schema.up.sql
 
 sqlc:
@@ -44,10 +44,8 @@ server:
 	go run main.go
 
 proto:
-	rm -f docs/swagger/*.swagger.json
 	rm -rf gen/pb/*
 	buf generate
-	statik -src=./docs/swagger -dest=./docs
 
 evans:
 	evans --host localhost --port 9090 -r repl

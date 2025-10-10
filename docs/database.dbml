@@ -1,0 +1,54 @@
+Enum type{
+  kabu  [note: "株式会社"]
+  yugen [note: "有限会社"]
+  godo  [note: "合同会社"]
+  goshi [note: "合資会社"]
+  gomei [note: "合名会社"]
+  other [note: "その他"]
+}
+
+Enum presuf {
+  prefix [note: "前株"]
+  suffix [note: "後株"]
+}
+
+Table company {
+  id uuid [pk]
+  ceo uuid [not null, unique]
+  trademark varchar [not null, note: "商標"]
+  type type [not null]
+  position presuf [not null, note: "前株か後株か"]
+  address varchar [not null]
+  company_code varchar [not null, unique, note: "法人番号"]
+  contact_id uuid [not null, unique]
+
+  created_at timestamptz [not null, default: `now()`]
+  indexes {
+    (trademark, position, type, address) [unique]
+    company_code
+  }
+}
+
+Table staff{
+  id uuid [pk]
+  name varchar [not null]
+  role varchar [not null, note:"役職", default: "一般社員"]
+  contact_id uuid [not null, unique]
+  company_id uuid [not null]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table contact {
+  id uuid [pk]
+  email varchar [not null, default: ""]
+  phone varchar [not null, default: ""]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Ref: "company"."id" < "staff"."company_id" [update: no action, delete: cascade]
+
+Ref: "company"."ceo" - "staff"."id"
+
+Ref: "contact"."id" - "company"."contact_id"
+
+Ref: "contact"."id" - "staff"."contact_id"

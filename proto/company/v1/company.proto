@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package company.v1;
+
+import "contact/v1/contact.proto";
+import "google/protobuf/timestamp.proto";
+import "staff/v1/staff.proto";
+
+option go_package = "github.com/0utl1er-tech/mom-company/gen/pb/company/v1;companyv1";
+
+service CompanyService {
+  rpc CreateCompany(CreateCompanyRequest) returns (CreateCompanyResponse);
+  rpc GetCompany(GetCompanyRequest) returns (GetCompanyResponse);
+  rpc ListCompanies(ListCompaniesRequest) returns (ListCompaniesResponse);
+
+  rpc CreateStaff(staff.v1.CreateStaffRequest) returns (staff.v1.CreateStaffResponse);
+  rpc UpdateStaff(staff.v1.UpdateStaffRequest) returns (staff.v1.UpdateStaffResponse);
+  rpc DeleteStaff(staff.v1.DeleteStaffRequest) returns (staff.v1.DeleteStaffResponse);
+}
+
+message Company {
+  string id = 1;
+  string trademark = 2;
+  string type = 3;
+  string position = 4;
+  string address = 5;
+  string company_code = 6;
+  contact.v1.Contact contact = 7;
+  repeated staff.v1.Staff staff = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message CreateCompanyRequest {
+  string trademark = 1;
+  string type = 2;
+  string position = 3;
+  string address = 4;
+  string company_code = 5;
+  contact.v1.ContactRequest contact = 6;
+  repeated staff.v1.Staff staff = 7;
+}
+
+message CreateCompanyResponse {
+  Company company = 1;
+}
+
+message UpdateCompanyRequest {
+  string id = 1;
+  optional string trademark = 2;
+  optional string type = 3;
+  optional string position = 4;
+  optional string address = 5;
+  optional string company_code = 6;
+  contact.v1.ContactRequest contact = 7;
+  repeated staff.v1.Staff staff = 8;
+}
+
+message GetCompanyRequest {
+  string id = 1;
+}
+
+message GetCompanyResponse {
+  Company company = 1;
+}
+
+message ListCompaniesRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message ListCompaniesResponse {
+  repeated Company companies = 1;
+}
