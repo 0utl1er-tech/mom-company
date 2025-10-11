@@ -6,11 +6,17 @@ import (
 	contactv1 "github.com/0utl1er-tech/mom-company/gen/pb/contact/v1"
 	staffv1 "github.com/0utl1er-tech/mom-company/gen/pb/staff/v1"
 	db "github.com/0utl1er-tech/mom-company/gen/sqlc"
+	"github.com/0utl1er-tech/mom-company/internal/util"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *Service) UpdateStaff(ctx context.Context, req *staffv1.UpdateStaffRequest) (*staffv1.UpdateStaffResponse, error) {
+	// リクエストをバリデーション
+	if err := util.ValidateMessage(req); err != nil {
+		return nil, err
+	}
+
 	// 既存のスタッフを取得
 	staffID, err := uuid.Parse(req.Id)
 	if err != nil {

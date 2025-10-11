@@ -5,10 +5,16 @@ import (
 
 	companyv1 "github.com/0utl1er-tech/mom-company/gen/pb/company/v1"
 	contactv1 "github.com/0utl1er-tech/mom-company/gen/pb/contact/v1"
+	"github.com/0utl1er-tech/mom-company/internal/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *Service) ListCompanies(ctx context.Context, req *companyv1.ListCompaniesRequest) (*companyv1.ListCompaniesResponse, error) {
+	// リクエストをバリデーション
+	if err := util.ValidateMessage(req); err != nil {
+		return nil, err
+	}
+
 	companies, err := s.db.ListCompanies(ctx)
 	if err != nil {
 		return nil, err

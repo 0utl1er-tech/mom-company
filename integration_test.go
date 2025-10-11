@@ -11,7 +11,6 @@ import (
 	db "github.com/0utl1er-tech/mom-company/gen/sqlc"
 	"github.com/0utl1er-tech/mom-company/internal/service/company"
 	"github.com/0utl1er-tech/mom-company/internal/service/staff"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -60,7 +59,7 @@ func TestCompanyServiceIntegration(t *testing.T) {
 			Type:        "kabu",
 			Position:    "suffix",
 			Address:     "東京都千代田区神田松永町１３番地ＶＯＲＴ秋葉原ＩＩ",
-			CompanyCode: uuid.New().String()[:13], // 一意の会社コード
+			CompanyCode: "1234567890123", // 一意の会社コード（13桁の数字）
 			Contact: &contactv1.ContactRequest{
 				Email: "info@0utl1er.tech",
 				Phone: "03-1111-1112",
@@ -113,7 +112,7 @@ func TestCompanyServiceIntegration(t *testing.T) {
 			Type:        "kabu",
 			Position:    "prefix",
 			Address:     "東京都渋谷区",
-			CompanyCode: uuid.New().String()[:13], // 一意の会社コード
+			CompanyCode: "1234567890124", // 一意の会社コード（13桁の数字）
 			Contact: &contactv1.ContactRequest{
 				Email: "info@get-test.com",
 				Phone: "03-2222-2223",
@@ -171,7 +170,7 @@ func TestCompanyServiceIntegration(t *testing.T) {
 				Type:        "kabu",
 				Position:    "prefix",
 				Address:     "東京都新宿区",
-				CompanyCode: uuid.New().String()[:13], // 一意の会社コード
+				CompanyCode: "1234567890124", // 一意の会社コード（13桁の数字）
 				Contact: &contactv1.ContactRequest{
 					Email: "info@list-a.com",
 					Phone: "03-3333-3334",
@@ -192,7 +191,7 @@ func TestCompanyServiceIntegration(t *testing.T) {
 				Type:        "kabu",
 				Position:    "suffix",
 				Address:     "東京都港区",
-				CompanyCode: uuid.New().String()[:13], // 一意の会社コード
+				CompanyCode: "1234567890124", // 一意の会社コード（13桁の数字）
 				Contact: &contactv1.ContactRequest{
 					Email: "info@list-b.com",
 					Phone: "03-4444-4445",
@@ -258,7 +257,7 @@ func TestCompanyServiceIntegration(t *testing.T) {
 			Type:        "kabu",
 			Position:    "prefix",
 			Address:     "東京都品川区",
-			CompanyCode: uuid.New().String()[:13], // 一意の会社コード
+			CompanyCode: "1234567890124", // 一意の会社コード（13桁の数字）
 			Contact: &contactv1.ContactRequest{
 				Email: "info@staff-test.com",
 				Phone: "03-5555-5556",

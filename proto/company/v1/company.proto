@@ -45,9 +45,9 @@ message CreateCompanyRequest {
     max_len: 500
   }];
   string company_code = 5 [(buf.validate.field).string = {
-    min_len: 1
-    max_len: 20
-    pattern: "^[A-Z0-9-]+$"
+    min_len: 13
+    max_len: 13
+    pattern: "^[0-9]{13}$"
   }];
   contact.v1.ContactRequest contact = 6 [(buf.validate.field).required = true];
   repeated staff.v1.Staff staff = 7;

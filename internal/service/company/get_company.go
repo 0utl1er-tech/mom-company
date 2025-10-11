@@ -5,11 +5,17 @@ import (
 
 	companyv1 "github.com/0utl1er-tech/mom-company/gen/pb/company/v1"
 	contactv1 "github.com/0utl1er-tech/mom-company/gen/pb/contact/v1"
+	"github.com/0utl1er-tech/mom-company/internal/util"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *Service) GetCompany(ctx context.Context, req *companyv1.GetCompanyRequest) (*companyv1.GetCompanyResponse, error) {
+	// リクエストをバリデーション
+	if err := util.ValidateMessage(req); err != nil {
+		return nil, err
+	}
+
 	companyID, err := uuid.Parse(req.Id)
 	if err != nil {
 		return nil, err

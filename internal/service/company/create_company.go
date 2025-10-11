@@ -7,11 +7,17 @@ import (
 	contactv1 "github.com/0utl1er-tech/mom-company/gen/pb/contact/v1"
 	staffv1 "github.com/0utl1er-tech/mom-company/gen/pb/staff/v1"
 	db "github.com/0utl1er-tech/mom-company/gen/sqlc"
+	"github.com/0utl1er-tech/mom-company/internal/util"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *Service) CreateCompany(ctx context.Context, req *companyv1.CreateCompanyRequest) (*companyv1.CreateCompanyResponse, error) {
+	// リクエストをバリデーション
+	if err := util.ValidateMessage(req); err != nil {
+		return nil, err
+	}
+
 	company_id := uuid.New()
 	company_contact_id := uuid.New()
 
