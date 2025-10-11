@@ -2,3 +2,11 @@ version: v2
 modules:
   - path: proto
     name: buf.build/0utl1er-tech/mom-company
+deps:
+  - buf.build/bufbuild/protovalidate
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT

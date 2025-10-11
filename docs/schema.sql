@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml.dbdiagram.io)
 -- Database: PostgreSQL
--- Generated at: 2025-10-11T04:58:40.136Z
+-- Generated at: 2025-10-11T05:34:26.353Z
 
 CREATE TYPE "type" AS ENUM (
   'kabu',
@@ -18,7 +18,6 @@ CREATE TYPE "presuf" AS ENUM (
 
 CREATE TABLE "company" (
   "id" uuid PRIMARY KEY,
-  "ceo" uuid UNIQUE NOT NULL,
   "trademark" varchar NOT NULL,
   "type" type NOT NULL,
   "position" presuf NOT NULL,
@@ -57,8 +56,6 @@ COMMENT ON COLUMN "company"."company_code" IS '法人番号';
 COMMENT ON COLUMN "staff"."role" IS '役職';
 
 ALTER TABLE "staff" ADD FOREIGN KEY ("company_id") REFERENCES "company" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
-ALTER TABLE "staff" ADD FOREIGN KEY ("id") REFERENCES "company" ("ceo");
 
 ALTER TABLE "company" ADD FOREIGN KEY ("contact_id") REFERENCES "contact" ("id");
 

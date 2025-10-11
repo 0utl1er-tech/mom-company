@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package contact.v1;
 
+import "buf/validate/validate.proto";
+
 option go_package = "github.com/0utl1er-tech/mom-company/gen/pb/contact/v1;contactv1";
 
 message Contact {
@@ -11,6 +13,14 @@ message Contact {
 }
 
 message ContactRequest {
-  string email = 1;
-  string phone = 2;
+  string email = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 255,
+    email: true
+  }];
+  string phone = 2 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 20,
+    pattern: "^[0-9-+()\\s]+$"
+  }];
 }

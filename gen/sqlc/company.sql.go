@@ -14,26 +14,24 @@ import (
 )
 
 const createCompany = `-- name: CreateCompany :one
-INSERT INTO company (id, ceo, trademark, type, position, address, company_code, contact_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, ceo, trademark, type, position, address, company_code, contact_id, created_at
+INSERT INTO company (id, trademark, type, position, address, company_code, contact_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, trademark, type, position, address, company_code, contact_id, created_at
 `
 
 type CreateCompanyParams struct {
-	ID          uuid.UUID   `json:"id"`
-	Ceo         pgtype.UUID `json:"ceo"`
-	Trademark   string      `json:"trademark"`
-	Type        Type        `json:"type"`
-	Position    Presuf      `json:"position"`
-	Address     string      `json:"address"`
-	CompanyCode string      `json:"company_code"`
-	ContactID   uuid.UUID   `json:"contact_id"`
+	ID          uuid.UUID `json:"id"`
+	Trademark   string    `json:"trademark"`
+	Type        Type      `json:"type"`
+	Position    Presuf    `json:"position"`
+	Address     string    `json:"address"`
+	CompanyCode string    `json:"company_code"`
+	ContactID   uuid.UUID `json:"contact_id"`
 }
 
 func (q *Queries) CreateCompany(ctx context.Context, arg CreateCompanyParams) (Company, error) {
 	row := q.db.QueryRow(ctx, createCompany,
 		arg.ID,
-		arg.Ceo,
 		arg.Trademark,
 		arg.Type,
 		arg.Position,
@@ -44,7 +42,6 @@ func (q *Queries) CreateCompany(ctx context.Context, arg CreateCompanyParams) (C
 	var i Company
 	err := row.Scan(
 		&i.ID,
-		&i.Ceo,
 		&i.Trademark,
 		&i.Type,
 		&i.Position,
@@ -68,7 +65,7 @@ func (q *Queries) DeleteCompany(ctx context.Context, id uuid.UUID) error {
 
 const getCompany = `-- name: GetCompany :one
 SELECT 
-  c.id, c.ceo, c.trademark, c.type, c.position, c.address, c.company_code, c.contact_id, c.created_at,
+  c.id, c.trademark, c.type, c.position, c.address, c.company_code, c.contact_id, c.created_at,
   co.email as contact_email, co.phone as contact_phone
 FROM company c
 LEFT JOIN contact co ON c.contact_id = co.id
@@ -77,7 +74,6 @@ WHERE c.id = $1
 
 type GetCompanyRow struct {
 	ID           uuid.UUID   `json:"id"`
-	Ceo          pgtype.UUID `json:"ceo"`
 	Trademark    string      `json:"trademark"`
 	Type         Type        `json:"type"`
 	Position     Presuf      `json:"position"`
@@ -94,7 +90,6 @@ func (q *Queries) GetCompany(ctx context.Context, id uuid.UUID) (GetCompanyRow, 
 	var i GetCompanyRow
 	err := row.Scan(
 		&i.ID,
-		&i.Ceo,
 		&i.Trademark,
 		&i.Type,
 		&i.Position,
@@ -110,7 +105,7 @@ func (q *Queries) GetCompany(ctx context.Context, id uuid.UUID) (GetCompanyRow, 
 
 const listCompanies = `-- name: ListCompanies :many
 SELECT 
-  c.id, c.ceo, c.trademark, c.type, c.position, c.address, c.company_code, c.contact_id, c.created_at,
+  c.id, c.trademark, c.type, c.position, c.address, c.company_code, c.contact_id, c.created_at,
   co.email as contact_email, co.phone as contact_phone
 FROM company c
 LEFT JOIN contact co ON c.contact_id = co.id
@@ -119,7 +114,6 @@ ORDER BY c.created_at DESC
 
 type ListCompaniesRow struct {
 	ID           uuid.UUID   `json:"id"`
-	Ceo          pgtype.UUID `json:"ceo"`
 	Trademark    string      `json:"trademark"`
 	Type         Type        `json:"type"`
 	Position     Presuf      `json:"position"`
@@ -142,7 +136,6 @@ func (q *Queries) ListCompanies(ctx context.Context) ([]ListCompaniesRow, error)
 		var i ListCompaniesRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.Ceo,
 			&i.Trademark,
 			&i.Type,
 			&i.Position,
@@ -172,7 +165,7 @@ SET
   address = $5, 
   company_code = $6
 WHERE id = $1
-RETURNING id, ceo, trademark, type, position, address, company_code, contact_id, created_at
+RETURNING id, trademark, type, position, address, company_code, contact_id, created_at
 `
 
 type UpdateCompanyParams struct {
@@ -196,36 +189,6 @@ func (q *Queries) UpdateCompany(ctx context.Context, arg UpdateCompanyParams) (C
 	var i Company
 	err := row.Scan(
 		&i.ID,
-		&i.Ceo,
-		&i.Trademark,
-		&i.Type,
-		&i.Position,
-		&i.Address,
-		&i.CompanyCode,
-		&i.ContactID,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
-const updateCompanyCeo = `-- name: UpdateCompanyCeo :one
-UPDATE company 
-SET ceo = $2
-WHERE id = $1
-RETURNING id, ceo, trademark, type, position, address, company_code, contact_id, created_at
-`
-
-type UpdateCompanyCeoParams struct {
-	ID  uuid.UUID   `json:"id"`
-	Ceo pgtype.UUID `json:"ceo"`
-}
-
-func (q *Queries) UpdateCompanyCeo(ctx context.Context, arg UpdateCompanyCeoParams) (Company, error) {
-	row := q.db.QueryRow(ctx, updateCompanyCeo, arg.ID, arg.Ceo)
-	var i Company
-	err := row.Scan(
-		&i.ID,
-		&i.Ceo,
 		&i.Trademark,
 		&i.Type,
 		&i.Position,

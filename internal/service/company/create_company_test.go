@@ -18,17 +18,19 @@ func TestCreateCompany(t *testing.T) {
 		Position:    "prefix",
 		Address:     "東京都渋谷区",
 		CompanyCode: "1234567890123",
-		Ceo: &staffv1.Staff{
-			Name: "田中太郎",
-			Role: "代表取締役",
-			Contact: &contactv1.Contact{
-				Email: "ceo@test.com",
-				Phone: "03-1234-5678",
-			},
-		},
 		Contact: &contactv1.ContactRequest{
 			Email: "info@test.com",
 			Phone: "03-1234-5679",
+		},
+		Staff: []*staffv1.Staff{
+			{
+				Name: "田中太郎",
+				Role: "代表取締役",
+				Contact: &contactv1.Contact{
+					Email: "ceo@test.com",
+					Phone: "03-1234-5678",
+				},
+			},
 		},
 	}
 
@@ -40,13 +42,13 @@ func TestCreateCompany(t *testing.T) {
 	assert.Equal(t, "prefix", req.Position)
 	assert.Equal(t, "東京都渋谷区", req.Address)
 	assert.Equal(t, "1234567890123", req.CompanyCode)
-	assert.NotNil(t, req.Ceo)
-	assert.Equal(t, "田中太郎", req.Ceo.Name)
-	assert.Equal(t, "代表取締役", req.Ceo.Role)
-	assert.NotNil(t, req.Ceo.Contact)
-	assert.Equal(t, "ceo@test.com", req.Ceo.Contact.Email)
-	assert.Equal(t, "03-1234-5678", req.Ceo.Contact.Phone)
 	assert.NotNil(t, req.Contact)
 	assert.Equal(t, "info@test.com", req.Contact.Email)
 	assert.Equal(t, "03-1234-5679", req.Contact.Phone)
+	assert.Len(t, req.Staff, 1)
+	assert.Equal(t, "田中太郎", req.Staff[0].Name)
+	assert.Equal(t, "代表取締役", req.Staff[0].Role)
+	assert.NotNil(t, req.Staff[0].Contact)
+	assert.Equal(t, "ceo@test.com", req.Staff[0].Contact.Email)
+	assert.Equal(t, "03-1234-5678", req.Staff[0].Contact.Phone)
 }

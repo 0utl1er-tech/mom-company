@@ -24,9 +24,9 @@ type Querier interface {
 	ListContact(ctx context.Context, id uuid.UUID) ([]Contact, error)
 	ListStaff(ctx context.Context, companyID uuid.UUID) ([]ListStaffRow, error)
 	UpdateCompany(ctx context.Context, arg UpdateCompanyParams) (Company, error)
-	UpdateCompanyCeo(ctx context.Context, arg UpdateCompanyCeoParams) (Company, error)
 	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)
 	UpdateStaff(ctx context.Context, arg UpdateStaffParams) (Staff, error)
+	UpdateStaffCompany(ctx context.Context, arg UpdateStaffCompanyParams) (Staff, error)
 }
 
 var _ Querier = (*Queries)(nil)

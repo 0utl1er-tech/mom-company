@@ -14,7 +14,6 @@ Enum presuf {
 
 Table company {
   id uuid [pk]
-  ceo uuid [not null, unique]
   trademark varchar [not null, note: "商標"]
   type type [not null]
   position presuf [not null, note: "前株か後株か"]
@@ -46,8 +45,6 @@ Table contact {
 }
 
 Ref: "company"."id" < "staff"."company_id" [update: no action, delete: cascade]
-
-Ref: "company"."ceo" - "staff"."id"
 
 Ref: "contact"."id" - "company"."contact_id"
 

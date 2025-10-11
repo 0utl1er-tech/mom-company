@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package staff.v1;
 
+import "buf/validate/validate.proto";
 import "contact/v1/contact.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -16,10 +17,19 @@ message Staff {
 }
 
 message CreateStaffRequest {
-  string name = 1;
-  string role = 2;
-  string company_id = 3;
-  contact.v1.ContactRequest contact = 4;
+  string name = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 100
+  }];
+  string role = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 50
+  }];
+  string company_id = 3 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 50
+  }];
+  contact.v1.ContactRequest contact = 4 [(buf.validate.field).required = true];
 }
 
 message CreateStaffResponse {
@@ -27,9 +37,18 @@ message CreateStaffResponse {
 }
 
 message UpdateStaffRequest {
-  string id = 1;
-  optional string name = 2;
-  optional string role = 3;
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 50
+  }];
+  optional string name = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 100
+  }];
+  optional string role = 3 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 50
+  }];
   contact.v1.ContactRequest contact = 4;
 }
 
@@ -38,7 +57,10 @@ message UpdateStaffResponse {
 }
 
 message DeleteStaffRequest {
-  string id = 1;
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 50
+  }];
 }
 
 message DeleteStaffResponse {

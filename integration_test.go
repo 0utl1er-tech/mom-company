@@ -11,6 +11,7 @@ import (
 	db "github.com/0utl1er-tech/mom-company/gen/sqlc"
 	"github.com/0utl1er-tech/mom-company/internal/service/company"
 	"github.com/0utl1er-tech/mom-company/internal/service/staff"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -57,20 +58,22 @@ func TestCompanyServiceIntegration(t *testing.T) {
 		req := &companyv1.CreateCompanyRequest{
 			Trademark:   "0UTL1ER",
 			Type:        "kabu",
-			Position:    "sufix",
+			Position:    "suffix",
 			Address:     "東京都千代田区神田松永町１３番地ＶＯＲＴ秋葉原ＩＩ",
-			CompanyCode: "9010001257448",
-			Ceo: &staffv1.Staff{
-				Name: "黒羽 晟",
-				Role: "代表取締役",
-				Contact: &contactv1.Contact{
-					Email: "joe@0utl1er.tech",
-					Phone: "090-1234-5678",
-				},
-			},
+			CompanyCode: uuid.New().String()[:13], // 一意の会社コード
 			Contact: &contactv1.ContactRequest{
 				Email: "info@0utl1er.tech",
 				Phone: "03-1111-1112",
+			},
+			Staff: []*staffv1.Staff{
+				{
+					Name: "黒羽 晟",
+					Role: "代表取締役",
+					Contact: &contactv1.Contact{
+						Email: "joe@0utl1er.tech",
+						Phone: "090-1234-5678",
+					},
+				},
 			},
 		}
 
@@ -92,8 +95,8 @@ func TestCompanyServiceIntegration(t *testing.T) {
 		assert.Equal(t, req.Contact.Email, resp.Company.Contact.Email)
 		assert.Equal(t, req.Contact.Phone, resp.Company.Contact.Phone)
 		assert.Len(t, resp.Company.Staff, 1)
-		assert.Equal(t, req.Ceo.Name, resp.Company.Staff[0].Name)
-		assert.Equal(t, req.Ceo.Role, resp.Company.Staff[0].Role)
+		assert.Equal(t, req.Staff[0].Name, resp.Company.Staff[0].Name)
+		assert.Equal(t, req.Staff[0].Role, resp.Company.Staff[0].Role)
 		assert.NotNil(t, resp.Company.CreatedAt)
 	})
 
@@ -110,18 +113,20 @@ func TestCompanyServiceIntegration(t *testing.T) {
 			Type:        "kabu",
 			Position:    "prefix",
 			Address:     "東京都渋谷区",
-			CompanyCode: "2222222222222",
-			Ceo: &staffv1.Staff{
-				Name: "取得テスト太郎",
-				Role: "代表取締役",
-				Contact: &contactv1.Contact{
-					Email: "get@test.com",
-					Phone: "03-2222-2222",
-				},
-			},
+			CompanyCode: uuid.New().String()[:13], // 一意の会社コード
 			Contact: &contactv1.ContactRequest{
 				Email: "info@get-test.com",
 				Phone: "03-2222-2223",
+			},
+			Staff: []*staffv1.Staff{
+				{
+					Name: "取得テスト太郎",
+					Role: "代表取締役",
+					Contact: &contactv1.Contact{
+						Email: "get@test.com",
+						Phone: "03-2222-2222",
+					},
+				},
 			},
 		}
 
@@ -166,18 +171,20 @@ func TestCompanyServiceIntegration(t *testing.T) {
 				Type:        "kabu",
 				Position:    "prefix",
 				Address:     "東京都新宿区",
-				CompanyCode: "3333333333333",
-				Ceo: &staffv1.Staff{
-					Name: "一覧テスト太郎A",
-					Role: "代表取締役",
-					Contact: &contactv1.Contact{
-						Email: "list-a@test.com",
-						Phone: "03-3333-3333",
-					},
-				},
+				CompanyCode: uuid.New().String()[:13], // 一意の会社コード
 				Contact: &contactv1.ContactRequest{
 					Email: "info@list-a.com",
 					Phone: "03-3333-3334",
+				},
+				Staff: []*staffv1.Staff{
+					{
+						Name: "一覧テスト太郎A",
+						Role: "代表取締役",
+						Contact: &contactv1.Contact{
+							Email: "list-a@test.com",
+							Phone: "03-3333-3333",
+						},
+					},
 				},
 			},
 			{
@@ -185,18 +192,20 @@ func TestCompanyServiceIntegration(t *testing.T) {
 				Type:        "kabu",
 				Position:    "suffix",
 				Address:     "東京都港区",
-				CompanyCode: "4444444444444",
-				Ceo: &staffv1.Staff{
-					Name: "一覧テスト太郎B",
-					Role: "代表取締役",
-					Contact: &contactv1.Contact{
-						Email: "list-b@test.com",
-						Phone: "03-4444-4444",
-					},
-				},
+				CompanyCode: uuid.New().String()[:13], // 一意の会社コード
 				Contact: &contactv1.ContactRequest{
 					Email: "info@list-b.com",
 					Phone: "03-4444-4445",
+				},
+				Staff: []*staffv1.Staff{
+					{
+						Name: "一覧テスト太郎B",
+						Role: "代表取締役",
+						Contact: &contactv1.Contact{
+							Email: "list-b@test.com",
+							Phone: "03-4444-4444",
+						},
+					},
 				},
 			},
 		}
@@ -249,18 +258,20 @@ func TestCompanyServiceIntegration(t *testing.T) {
 			Type:        "kabu",
 			Position:    "prefix",
 			Address:     "東京都品川区",
-			CompanyCode: "5555555555555",
-			Ceo: &staffv1.Staff{
-				Name: "スタッフテスト太郎",
-				Role: "代表取締役",
-				Contact: &contactv1.Contact{
-					Email: "staff@test.com",
-					Phone: "03-5555-5555",
-				},
-			},
+			CompanyCode: uuid.New().String()[:13], // 一意の会社コード
 			Contact: &contactv1.ContactRequest{
 				Email: "info@staff-test.com",
 				Phone: "03-5555-5556",
+			},
+			Staff: []*staffv1.Staff{
+				{
+					Name: "スタッフテスト太郎",
+					Role: "代表取締役",
+					Contact: &contactv1.Contact{
+						Email: "staff@test.com",
+						Phone: "03-5555-5555",
+					},
+				},
 			},
 		}
 

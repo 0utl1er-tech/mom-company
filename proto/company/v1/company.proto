@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package company.v1;
 
+import "buf/validate/validate.proto";
 import "contact/v1/contact.proto";
 import "google/protobuf/timestamp.proto";
 import "staff/v1/staff.proto";
@@ -27,14 +28,29 @@ message Company {
 }
 
 message CreateCompanyRequest {
-  string trademark = 1;
-  string type = 2;
-  string position = 3;
-  string address = 4;
-  string company_code = 5;
-  staff.v1.Staff ceo = 6;
-  contact.v1.ContactRequest contact = 7;
-  repeated staff.v1.Staff staff = 8;
+  string trademark = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 100
+  }];
+  string type = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 50
+  }];
+  string position = 3 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 200
+  }];
+  string address = 4 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 500
+  }];
+  string company_code = 5 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 20
+    pattern: "^[A-Z0-9-]+$"
+  }];
+  contact.v1.ContactRequest contact = 6 [(buf.validate.field).required = true];
+  repeated staff.v1.Staff staff = 7;
 }
 
 message CreateCompanyResponse {
@@ -48,9 +64,8 @@ message UpdateCompanyRequest {
   optional string position = 4;
   optional string address = 5;
   optional string company_code = 6;
-  staff.v1.Staff ceo = 7;
-  contact.v1.ContactRequest contact = 8;
-  repeated staff.v1.Staff staff = 9;
+  contact.v1.ContactRequest contact = 7;
+  repeated staff.v1.Staff staff = 8;
 }
 
 message GetCompanyRequest {
@@ -62,8 +77,11 @@ message GetCompanyResponse {
 }
 
 message ListCompaniesRequest {
-  int32 page = 1;
-  int32 limit = 2;
+  int32 page = 1 [(buf.validate.field).int32 = {gte: 1}];
+  int32 limit = 2 [(buf.validate.field).int32 = {
+    gte: 1
+    lte: 100
+  }];
 }
 
 message ListCompaniesResponse {

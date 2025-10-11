@@ -9,6 +9,12 @@ SET name = $2, role = $3, contact_id = $4
 WHERE id = $1
 RETURNING *;
 
+-- name: UpdateStaffCompany :one
+UPDATE staff
+SET company_id = $2
+WHERE id = $1
+RETURNING *;
+
 -- name: DeleteStaff :exec
 DELETE FROM staff
 WHERE id = $1;

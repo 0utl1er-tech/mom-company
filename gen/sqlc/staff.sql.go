@@ -157,3 +157,29 @@ func (q *Queries) UpdateStaff(ctx context.Context, arg UpdateStaffParams) (Staff
 	)
 	return i, err
 }
+
+const updateStaffCompany = `-- name: UpdateStaffCompany :one
+UPDATE staff
+SET company_id = $2
+WHERE id = $1
+RETURNING id, name, role, contact_id, company_id, created_at
+`
+
+type UpdateStaffCompanyParams struct {
+	ID        uuid.UUID `json:"id"`
+	CompanyID uuid.UUID `json:"company_id"`
+}
+
+func (q *Queries) UpdateStaffCompany(ctx context.Context, arg UpdateStaffCompanyParams) (Staff, error) {
+	row := q.db.QueryRow(ctx, updateStaffCompany, arg.ID, arg.CompanyID)
+	var i Staff
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Role,
+		&i.ContactID,
+		&i.CompanyID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
