@@ -1,4 +1,4 @@
-package service
+package contact
 
 import db "github.com/0utl1er-tech/mom-company/gen/sqlc"
 

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Presuf string
@@ -101,8 +102,8 @@ func (ns NullType) Value() (driver.Value, error) {
 }
 
 type Company struct {
-	ID  uuid.UUID `json:"id"`
-	Ceo uuid.UUID `json:"ceo"`
+	ID  uuid.UUID   `json:"id"`
+	Ceo pgtype.UUID `json:"ceo"`
 	// 商標
 	Trademark string `json:"trademark"`
 	Type      Type   `json:"type"`

@@ -12,9 +12,21 @@ import (
 
 type Querier interface {
 	CreateCompany(ctx context.Context, arg CreateCompanyParams) (Company, error)
+	CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error)
+	CreateStaff(ctx context.Context, arg CreateStaffParams) (Staff, error)
 	DeleteCompany(ctx context.Context, id uuid.UUID) error
-	GetCompany(ctx context.Context, id uuid.UUID) (Company, error)
+	DeleteContact(ctx context.Context, id uuid.UUID) error
+	DeleteStaff(ctx context.Context, id uuid.UUID) error
+	GetCompany(ctx context.Context, id uuid.UUID) (GetCompanyRow, error)
+	GetContact(ctx context.Context, id uuid.UUID) (Contact, error)
+	GetStaff(ctx context.Context, id uuid.UUID) (Staff, error)
+	ListCompanies(ctx context.Context) ([]ListCompaniesRow, error)
+	ListContact(ctx context.Context, id uuid.UUID) ([]Contact, error)
+	ListStaff(ctx context.Context, companyID uuid.UUID) ([]ListStaffRow, error)
 	UpdateCompany(ctx context.Context, arg UpdateCompanyParams) (Company, error)
+	UpdateCompanyCeo(ctx context.Context, arg UpdateCompanyCeoParams) (Company, error)
+	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)
+	UpdateStaff(ctx context.Context, arg UpdateStaffParams) (Staff, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -8,6 +8,8 @@ import (
 
 	companyv1connect "github.com/0utl1er-tech/mom-company/gen/pb/company/v1/companyv1connect"
 	db "github.com/0utl1er-tech/mom-company/gen/sqlc"
+	"github.com/0utl1er-tech/mom-company/internal/handler"
+	"github.com/0utl1er-tech/mom-company/internal/service/company"
 	"github.com/0utl1er-tech/mom-company/internal/util"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
@@ -34,15 +36,14 @@ func main() {
 	}
 
 	queries := db.New(connPool)
-	_ = queries
+	companyService := company.NewService(queries, connPool)
 
 	// HTTPサーバーの設定
 	mux := http.NewServeMux()
 
-	// Connect-Goハンドラーを登録（Company のみ、空実装）
-	path, handler := companyv1connect.NewCompanyServiceHandler(
-		companyv1connect.UnimplementedCompanyServiceHandler{},
-	)
+	// Connect-Goハンドラーを登録
+	companyHandler := handler.NewCompanyServiceHandler(companyService)
+	path, handler := companyv1connect.NewCompanyServiceHandler(companyHandler)
 	mux.Handle(path, handler)
 
 	// HTTP/2対応のサーバーを作成

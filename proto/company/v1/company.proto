@@ -12,10 +12,6 @@ service CompanyService {
   rpc CreateCompany(CreateCompanyRequest) returns (CreateCompanyResponse);
   rpc GetCompany(GetCompanyRequest) returns (GetCompanyResponse);
   rpc ListCompanies(ListCompaniesRequest) returns (ListCompaniesResponse);
-
-  rpc CreateStaff(staff.v1.CreateStaffRequest) returns (staff.v1.CreateStaffResponse);
-  rpc UpdateStaff(staff.v1.UpdateStaffRequest) returns (staff.v1.UpdateStaffResponse);
-  rpc DeleteStaff(staff.v1.DeleteStaffRequest) returns (staff.v1.DeleteStaffResponse);
 }
 
 message Company {
@@ -36,8 +32,9 @@ message CreateCompanyRequest {
   string position = 3;
   string address = 4;
   string company_code = 5;
-  contact.v1.ContactRequest contact = 6;
-  repeated staff.v1.Staff staff = 7;
+  staff.v1.Staff ceo = 6;
+  contact.v1.ContactRequest contact = 7;
+  repeated staff.v1.Staff staff = 8;
 }
 
 message CreateCompanyResponse {
@@ -51,8 +48,9 @@ message UpdateCompanyRequest {
   optional string position = 4;
   optional string address = 5;
   optional string company_code = 6;
-  contact.v1.ContactRequest contact = 7;
-  repeated staff.v1.Staff staff = 8;
+  staff.v1.Staff ceo = 7;
+  contact.v1.ContactRequest contact = 8;
+  repeated staff.v1.Staff staff = 9;
 }
 
 message GetCompanyRequest {

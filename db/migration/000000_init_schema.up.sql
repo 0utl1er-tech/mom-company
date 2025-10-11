@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml.dbdiagram.io)
 -- Database: PostgreSQL
--- Generated at: 2025-10-10T06:12:04.568Z
+-- Generated at: 2025-10-11T04:58:40.136Z
 
 CREATE TYPE "type" AS ENUM (
   'kabu',

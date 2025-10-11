@@ -1,11 +1,15 @@
-package service
+package company
 
-import db "github.com/0utl1er-tech/mom-company/gen/sqlc"
+import (
+	db "github.com/0utl1er-tech/mom-company/gen/sqlc"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
-type CompanyService struct {
-	db *db.Queries
+type Service struct {
+	db       *db.Queries
+	connPool *pgxpool.Pool
 }
 
-func NewCompanyService(db *db.Queries) *CompanyService {
-	return &CompanyService{db: db}
+func NewService(queries *db.Queries, connPool *pgxpool.Pool) *Service {
+	return &Service{db: queries, connPool: connPool}
 }

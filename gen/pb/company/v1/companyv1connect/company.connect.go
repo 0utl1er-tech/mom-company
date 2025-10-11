@@ -8,7 +8,6 @@ import (
 	context "context"
 	errors "errors"
 	v1 "github.com/0utl1er-tech/mom-company/gen/pb/company/v1"
-	v11 "github.com/0utl1er-tech/mom-company/gen/pb/staff/v1"
 	connect_go "github.com/bufbuild/connect-go"
 	http "net/http"
 	strings "strings"
@@ -43,12 +42,6 @@ const (
 	// CompanyServiceListCompaniesProcedure is the fully-qualified name of the CompanyService's
 	// ListCompanies RPC.
 	CompanyServiceListCompaniesProcedure = "/company.v1.CompanyService/ListCompanies"
-	// CompanyServiceCreateStaffProcedure is the fully-qualified name of the CompanyService's
-	// CreateStaff RPC.
-	CompanyServiceCreateStaffProcedure = "/company.v1.CompanyService/CreateStaff"
-	// CompanyServiceUpdateStaffProcedure is the fully-qualified name of the CompanyService's
-	// UpdateStaff RPC.
-	CompanyServiceUpdateStaffProcedure = "/company.v1.CompanyService/UpdateStaff"
 )
 
 // CompanyServiceClient is a client for the company.v1.CompanyService service.
@@ -56,8 +49,6 @@ type CompanyServiceClient interface {
 	CreateCompany(context.Context, *connect_go.Request[v1.CreateCompanyRequest]) (*connect_go.Response[v1.CreateCompanyResponse], error)
 	GetCompany(context.Context, *connect_go.Request[v1.GetCompanyRequest]) (*connect_go.Response[v1.GetCompanyResponse], error)
 	ListCompanies(context.Context, *connect_go.Request[v1.ListCompaniesRequest]) (*connect_go.Response[v1.ListCompaniesResponse], error)
-	CreateStaff(context.Context, *connect_go.Request[v11.CreateStaffRequest]) (*connect_go.Response[v11.CreateStaffResponse], error)
-	UpdateStaff(context.Context, *connect_go.Request[v11.UpdateStaffRequest]) (*connect_go.Response[v11.UpdateStaffResponse], error)
 }
 
 // NewCompanyServiceClient constructs a client for the company.v1.CompanyService service. By
@@ -85,16 +76,6 @@ func NewCompanyServiceClient(httpClient connect_go.HTTPClient, baseURL string, o
 			baseURL+CompanyServiceListCompaniesProcedure,
 			opts...,
 		),
-		createStaff: connect_go.NewClient[v11.CreateStaffRequest, v11.CreateStaffResponse](
-			httpClient,
-			baseURL+CompanyServiceCreateStaffProcedure,
-			opts...,
-		),
-		updateStaff: connect_go.NewClient[v11.UpdateStaffRequest, v11.UpdateStaffResponse](
-			httpClient,
-			baseURL+CompanyServiceUpdateStaffProcedure,
-			opts...,
-		),
 	}
 }
 
@@ -103,8 +84,6 @@ type companyServiceClient struct {
 	createCompany *connect_go.Client[v1.CreateCompanyRequest, v1.CreateCompanyResponse]
 	getCompany    *connect_go.Client[v1.GetCompanyRequest, v1.GetCompanyResponse]
 	listCompanies *connect_go.Client[v1.ListCompaniesRequest, v1.ListCompaniesResponse]
-	createStaff   *connect_go.Client[v11.CreateStaffRequest, v11.CreateStaffResponse]
-	updateStaff   *connect_go.Client[v11.UpdateStaffRequest, v11.UpdateStaffResponse]
 }
 
 // CreateCompany calls company.v1.CompanyService.CreateCompany.
@@ -122,23 +101,11 @@ func (c *companyServiceClient) ListCompanies(ctx context.Context, req *connect_g
 	return c.listCompanies.CallUnary(ctx, req)
 }
 
-// CreateStaff calls company.v1.CompanyService.CreateStaff.
-func (c *companyServiceClient) CreateStaff(ctx context.Context, req *connect_go.Request[v11.CreateStaffRequest]) (*connect_go.Response[v11.CreateStaffResponse], error) {
-	return c.createStaff.CallUnary(ctx, req)
-}
-
-// UpdateStaff calls company.v1.CompanyService.UpdateStaff.
-func (c *companyServiceClient) UpdateStaff(ctx context.Context, req *connect_go.Request[v11.UpdateStaffRequest]) (*connect_go.Response[v11.UpdateStaffResponse], error) {
-	return c.updateStaff.CallUnary(ctx, req)
-}
-
 // CompanyServiceHandler is an implementation of the company.v1.CompanyService service.
 type CompanyServiceHandler interface {
 	CreateCompany(context.Context, *connect_go.Request[v1.CreateCompanyRequest]) (*connect_go.Response[v1.CreateCompanyResponse], error)
 	GetCompany(context.Context, *connect_go.Request[v1.GetCompanyRequest]) (*connect_go.Response[v1.GetCompanyResponse], error)
 	ListCompanies(context.Context, *connect_go.Request[v1.ListCompaniesRequest]) (*connect_go.Response[v1.ListCompaniesResponse], error)
-	CreateStaff(context.Context, *connect_go.Request[v11.CreateStaffRequest]) (*connect_go.Response[v11.CreateStaffResponse], error)
-	UpdateStaff(context.Context, *connect_go.Request[v11.UpdateStaffRequest]) (*connect_go.Response[v11.UpdateStaffResponse], error)
 }
 
 // NewCompanyServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -162,16 +129,6 @@ func NewCompanyServiceHandler(svc CompanyServiceHandler, opts ...connect_go.Hand
 		svc.ListCompanies,
 		opts...,
 	)
-	companyServiceCreateStaffHandler := connect_go.NewUnaryHandler(
-		CompanyServiceCreateStaffProcedure,
-		svc.CreateStaff,
-		opts...,
-	)
-	companyServiceUpdateStaffHandler := connect_go.NewUnaryHandler(
-		CompanyServiceUpdateStaffProcedure,
-		svc.UpdateStaff,
-		opts...,
-	)
 	return "/company.v1.CompanyService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CompanyServiceCreateCompanyProcedure:
@@ -180,10 +137,6 @@ func NewCompanyServiceHandler(svc CompanyServiceHandler, opts ...connect_go.Hand
 			companyServiceGetCompanyHandler.ServeHTTP(w, r)
 		case CompanyServiceListCompaniesProcedure:
 			companyServiceListCompaniesHandler.ServeHTTP(w, r)
-		case CompanyServiceCreateStaffProcedure:
-			companyServiceCreateStaffHandler.ServeHTTP(w, r)
-		case CompanyServiceUpdateStaffProcedure:
-			companyServiceUpdateStaffHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -203,12 +156,4 @@ func (UnimplementedCompanyServiceHandler) GetCompany(context.Context, *connect_g
 
 func (UnimplementedCompanyServiceHandler) ListCompanies(context.Context, *connect_go.Request[v1.ListCompaniesRequest]) (*connect_go.Response[v1.ListCompaniesResponse], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("company.v1.CompanyService.ListCompanies is not implemented"))
-}
-
-func (UnimplementedCompanyServiceHandler) CreateStaff(context.Context, *connect_go.Request[v11.CreateStaffRequest]) (*connect_go.Response[v11.CreateStaffResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("company.v1.CompanyService.CreateStaff is not implemented"))
-}
-
-func (UnimplementedCompanyServiceHandler) UpdateStaff(context.Context, *connect_go.Request[v11.UpdateStaffRequest]) (*connect_go.Response[v11.UpdateStaffResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("company.v1.CompanyService.UpdateStaff is not implemented"))
 }

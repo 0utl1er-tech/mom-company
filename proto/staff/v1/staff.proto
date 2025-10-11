@@ -18,7 +18,8 @@ message Staff {
 message CreateStaffRequest {
   string name = 1;
   string role = 2;
-  contact.v1.ContactRequest contact = 3;
+  string company_id = 3;
+  contact.v1.ContactRequest contact = 4;
 }
 
 message CreateStaffResponse {
