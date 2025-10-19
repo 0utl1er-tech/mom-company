@@ -1,7 +1,7 @@
 version: v2
 modules:
   - path: proto
-    name: buf.build/0utl1er-tech/mom-company
+    name: buf.build/outlier/mom-company
 deps:
   - buf.build/bufbuild/protovalidate
 breaking:

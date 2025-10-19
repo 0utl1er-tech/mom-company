@@ -45,7 +45,7 @@ message CreateCompanyRequest {
     max_len: 500
   }];
   string company_code = 5 [(buf.validate.field).string = {
-    min_len: 13
+    min_len: 1
     max_len: 13
     pattern: "^[0-9]{13}$"
   }];
